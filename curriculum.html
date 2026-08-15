@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curriculum — Ana Carolina Alves de Oliveira | Psicóloga</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.0.19/index.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.19/index.css">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0f172a; /* Slate 900 */
+            --accent: #e11d48; /* Rose 600 */
+            --gold: #d97706; /* Amber 600 */
+            --text-main: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        #neural-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-card-hover:hover {
+            border-color: rgba(225, 29, 72, 0.3);
+            box-shadow: 0 0 30px rgba(225, 29, 72, 0.1);
+            transform: translateY(-5px);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .text-gradient-gold {
+            background: linear-gradient(to right, #fbbf24, #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .cursor-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(225,29,72,0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s;
+        }
+
+        /* --- Timeline --- */
+        .timeline {
+            position: relative;
+            padding-left: 2.5rem;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 6px;
+            bottom: 6px;
+            width: 1px;
+            background: linear-gradient(to bottom, rgba(225,29,72,0.6), rgba(225,29,72,0));
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-dot {
+            position: absolute;
+            left: -2.5rem;
+            top: 4px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--bg-dark);
+            border: 2px solid #e11d48;
+        }
+
+        /* --- Placeholder fields --- */
+        .field-placeholder {
+            color: #fda4af; /* rose-300 */
+            font-style: italic;
+            border-bottom: 1px dashed rgba(253, 164, 175, 0.4);
+        }
+
+        .tag-pill {
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.03);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-rose-500 selection:text-white">
+
+    <canvas id="neural-canvas"></canvas>
+    <div id="cursor-glow" class="cursor-glow hidden md:block"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300 py-6 px-6 lg:px-12">
+        <div class="max-w-7xl mx-auto glass-panel rounded-full px-6 py-3 flex justify-between items-center border-white/5">
+            <a href="Matchmaking.html" class="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Volver al inicio
+            </a>
+            <div class="text-lg font-bold serif tracking-wide text-white hidden sm:block">
+                Ana Carolina <span class="text-rose-500">Alves de Oliveira</span>
+            </div>
+                        <button onclick="openModal()" class="bg-white text-slate-900 hover:bg-rose-50 px-6 py-2 rounded-full text-sm font-bold transition transform hover:scale-105">
+                Agendar Entrevista
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero / Encabezado del CV -->
+    <header class="relative min-h-[90vh] flex items-center pt-32 pb-16 overflow-hidden">
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+
+                <!-- Foto -->
+                <div class="lg:w-1/3 reveal-up">
+                    <div class="relative z-10 glass-panel p-2 rounded-2xl -rotate-2 hover:rotate-0 transition duration-700">
+                        <img src="fotos/foto_Ana_1.png" alt="Ana Carolina Alves de Oliveira" class="rounded-xl w-full h-auto object-cover aspect-[4/5]">
+                        <div class="absolute -bottom-6 -right-6 glass-panel p-4 rounded-xl z-20 border-l-4 border-rose-500">
+                            <p class="text-xs text-slate-400 uppercase tracking-widest">Matrícula Profesional</p>
+                            <p class="font-bold text-white field-placeholder">[N.º de matrícula]</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Datos principales -->
+                <div class="lg:w-2/3 space-y-6">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-bold uppercase tracking-widest reveal-up">
+                        <i data-lucide="brain" class="w-3.5 h-3.5"></i>
+                        Curriculum Vitae
+                    </div>
+
+                    <h1 class="text-5xl lg:text-6xl xl:text-7xl leading-[0.95] text-white reveal-up">
+                        Ana Carolina<br>
+                        <span class="italic text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-300">Alves de Oliveira</span>
+                    </h1>
+
+                    <p class="text-xl text-slate-300 reveal-up field-placeholder">
+                        [Especialidad principal — ej: Psicóloga especializada en vínculos, apego y psicología de pareja]
+                    </p>
+
+                    <p class="text-slate-400 leading-relaxed max-w-2xl reveal-up field-placeholder">
+                        [Bajada / resumen profesional breve: años de experiencia, enfoque terapéutico y para quién trabaja. Este texto se completa después con la biografía definitiva.]
+                    </p>
+
+                    <!-- Datos de contacto rápidos -->
+                    <div class="flex flex-wrap gap-6 pt-4 reveal-up">
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <i data-lucide="mail" class="w-4 h-4 text-rose-400"></i>
+                            <span class="field-placeholder">[email@dominio.com]</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <i data-lucide="phone" class="w-4 h-4 text-rose-400"></i>
+                            <span class="field-placeholder">[+54 9 11 0000 0000]</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-rose-400"></i>
+                            <span class="field-placeholder">[Buenos Aires, Argentina]</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-slate-300">
+                            <i data-lucide="linkedin" class="w-4 h-4 text-rose-400"></i>
+                            <span class="field-placeholder">[linkedin.com/in/usuario]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Stats rápidas -->
+    <section class="relative py-10 border-y border-white/5">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center reveal-up">
+                <div>
+                    <p class="text-4xl font-bold text-gradient-gold serif field-placeholder">[XX]</p>
+                    <p class="text-xs uppercase tracking-widest text-slate-400 mt-1">Años de experiencia</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-bold text-gradient-gold serif field-placeholder">[XXX]</p>
+                    <p class="text-xs uppercase tracking-widest text-slate-400 mt-1">Pacientes / parejas acompañados</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-bold text-gradient-gold serif field-placeholder">[X]</p>
+                    <p class="text-xs uppercase tracking-widest text-slate-400 mt-1">Posgrados / certificaciones</p>
+                </div>
+                <div>
+                    <p class="text-4xl font-bold text-gradient-gold serif field-placeholder">[X]</p>
+                    <p class="text-xs uppercase tracking-widest text-slate-400 mt-1">Idiomas de atención</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formación Académica -->
+    <section id="formacion" class="relative py-24">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <div class="mb-14 reveal-up">
+                <p class="text-rose-400 text-xs font-bold uppercase tracking-widest mb-2">01 — Trayectoria</p>
+                <h2 class="text-4xl lg:text-5xl text-white">Formación Académica</h2>
+            </div>
+
+            <div class="timeline reveal-up">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <p class="text-sm text-rose-300 field-placeholder mb-1">[Año inicio] — [Año fin]</p>
+                    <h3 class="text-2xl text-white serif field-placeholder">[Título de grado — ej: Licenciatura en Psicología]</h3>
+                    <p class="text-slate-400 field-placeholder">[Universidad / Institución]</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <p class="text-sm text-rose-300 field-placeholder mb-1">[Año inicio] — [Año fin]</p>
+                    <h3 class="text-2xl text-white serif field-placeholder">[Posgrado / Maestría]</h3>
+                    <p class="text-slate-400 field-placeholder">[Universidad / Institución]</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <p class="text-sm text-rose-300 field-placeholder mb-1">[Año inicio] — [Año fin]</p>
+                    <h3 class="text-2xl text-white serif field-placeholder">[Formación complementaria / Diplomatura]</h3>
+                    <p class="text-slate-400 field-placeholder">[Universidad / Institución]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Especialización y Posgrados -->
+    <section id="especializacion" class="relative py-24 bg-slate-900/40">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="mb-14 reveal-up">
+                <p class="text-rose-400 text-xs font-bold uppercase tracking-widest mb-2">02 — Foco Clínico</p>
+                <h2 class="text-4xl lg:text-5xl text-white">Áreas de Especialización</h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 reveal-up">
+                <div class="glass-panel glass-card-hover rounded-xl p-6 transition duration-500">
+                    <i data-lucide="heart-handshake" class="w-8 h-8 text-rose-400 mb-4"></i>
+                    <h3 class="text-xl text-white serif mb-2 field-placeholder">[Especialidad 1 — ej: Psicología del Vínculo y la Pareja]</h3>
+                    <p class="text-sm text-slate-400 field-placeholder">[Breve descripción del enfoque en esta área]</p>
+                </div>
+                <div class="glass-panel glass-card-hover rounded-xl p-6 transition duration-500">
+                    <i data-lucide="link-2" class="w-8 h-8 text-rose-400 mb-4"></i>
+                    <h3 class="text-xl text-white serif mb-2 field-placeholder">[Especialidad 2 — ej: Teoría del Apego]</h3>
+                    <p class="text-sm text-slate-400 field-placeholder">[Breve descripción del enfoque en esta área]</p>
+                </div>
+                <div class="glass-panel glass-card-hover rounded-xl p-6 transition duration-500">
+                    <i data-lucide="brain-circuit" class="w-8 h-8 text-rose-400 mb-4"></i>
+                    <h3 class="text-xl text-white serif mb-2 field-placeholder">[Especialidad 3 — ej: Terapia Cognitivo-Conductual]</h3>
+                    <p class="text-sm text-slate-400 field-placeholder">[Breve descripción del enfoque en esta área]</p>
+                </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="flex flex-wrap gap-3 mt-10 reveal-up">
+                <span class="tag-pill px-4 py-2 rounded-full text-sm text-slate-300 field-placeholder">[Tema / palabra clave]</span>
+                <span class="tag-pill px-4 py-2 rounded-full text-sm text-slate-300 field-placeholder">[Tema / palabra clave]</span>
+                <span class="tag-pill px-4 py-2 rounded-full text-sm text-slate-300 field-placeholder">[Tema / palabra clave]</span>
+                <span class="tag-pill px-4 py-2 rounded-full text-sm text-slate-300 field-placeholder">[Tema / palabra clave]</span>
+                <span class="tag-pill px-4 py-2 rounded-full text-sm text-slate-300 field-placeholder">[Tema / palabra clave]</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experiencia Profesional -->
+    <section id="experiencia" class="relative py-24">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <div class="mb-14 reveal-up">
+                <p class="text-rose-400 text-xs font-bold uppercase tracking-widest mb-2">03 — Recorrido</p>
+                <h2 class="text-4xl lg:text-5xl text-white">Experiencia Profesional</h2>
+            </div>
+
+            <div class="timeline reveal-up">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <p class="text-sm text-rose-300 field-placeholder mb-1">[Año] — Presente</p>
+                    <h3 class="text-2xl text-white serif field-placeholder">[Cargo — ej: Psicóloga Clínica en Consulta Privada]</h3>
+                    <p class="text-slate-400 mb-2 field-placeholder">[Institución / Consultorio]</p>
+                    <p class="text-slate-500 text-sm field-placeholder">[Descripción breve de tareas y logros principales]</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <p class="text-sm text-rose-300 field-placeholder mb-1">[Año] — [Año]</p>
+                    <h3 class="text-2xl text-white serif field-placeholder">[Cargo anterior]</h3>
+                    <p class="text-slate-400 mb-2 field-placeholder">[Institución]</p>
+                    <p class="text-slate-500 text-sm field-placeholder">[Descripción breve de tareas y logros principales]</p>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <p class="text-sm text-rose-300 field-placeholder mb-1">[Año] — [Año]</p>
+                    <h3 class="text-2xl text-white serif field-placeholder">[Cargo anterior]</h3>
+                    <p class="text-slate-400 mb-2 field-placeholder">[Institución]</p>
+                    <p class="text-slate-500 text-sm field-placeholder">[Descripción breve de tareas y logros principales]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certificaciones -->
+    <section id="certificaciones" class="relative py-24 bg-slate-900/40">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="mb-14 reveal-up">
+                <p class="text-rose-400 text-xs font-bold uppercase tracking-widest mb-2">04 — Credenciales</p>
+                <h2 class="text-4xl lg:text-5xl text-white">Certificaciones y Formación Continua</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 reveal-up">
+                <div class="glass-panel rounded-xl p-6 flex items-start gap-4">
+                    <i data-lucide="award" class="w-6 h-6 text-amber-400 shrink-0 mt-1"></i>
+                    <div>
+                        <h3 class="text-white font-semibold field-placeholder">[Nombre de la certificación]</h3>
+                        <p class="text-sm text-slate-400 field-placeholder">[Institución emisora — Año]</p>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-xl p-6 flex items-start gap-4">
+                    <i data-lucide="award" class="w-6 h-6 text-amber-400 shrink-0 mt-1"></i>
+                    <div>
+                        <h3 class="text-white font-semibold field-placeholder">[Nombre de la certificación]</h3>
+                        <p class="text-sm text-slate-400 field-placeholder">[Institución emisora — Año]</p>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-xl p-6 flex items-start gap-4">
+                    <i data-lucide="award" class="w-6 h-6 text-amber-400 shrink-0 mt-1"></i>
+                    <div>
+                        <h3 class="text-white font-semibold field-placeholder">[Nombre de la certificación]</h3>
+                        <p class="text-sm text-slate-400 field-placeholder">[Institución emisora — Año]</p>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-xl p-6 flex items-start gap-4">
+                    <i data-lucide="award" class="w-6 h-6 text-amber-400 shrink-0 mt-1"></i>
+                    <div>
+                        <h3 class="text-white font-semibold field-placeholder">[Nombre de la certificación]</h3>
+                        <p class="text-sm text-slate-400 field-placeholder">[Institución emisora — Año]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enfoque / Metodología -->
+    <section id="enfoque" class="relative py-24">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="mb-14 reveal-up">
+                <p class="text-rose-400 text-xs font-bold uppercase tracking-widest mb-2">05 — Filosofía de Trabajo</p>
+                <h2 class="text-4xl lg:text-5xl text-white">Enfoque Terapéutico</h2>
+                <p class="text-slate-400 max-w-2xl mt-4 field-placeholder">
+                    [Párrafo donde se explica la filosofía general de trabajo: cómo combina la escucha clínica con el criterio científico aplicado al vínculo.]
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 reveal-up">
+                <div class="text-center">
+                    <div class="w-14 h-14 mx-auto rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4">
+                        <i data-lucide="ear" class="w-6 h-6 text-rose-400"></i>
+                    </div>
+                    <h3 class="text-lg text-white serif mb-2 field-placeholder">[Pilar 1 del método]</h3>
+                    <p class="text-sm text-slate-400 field-placeholder">[Descripción breve]</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-14 h-14 mx-auto rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4">
+                        <i data-lucide="line-chart" class="w-6 h-6 text-rose-400"></i>
+                    </div>
+                    <h3 class="text-lg text-white serif mb-2 field-placeholder">[Pilar 2 del método]</h3>
+                    <p class="text-sm text-slate-400 field-placeholder">[Descripción breve]</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-14 h-14 mx-auto rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4">
+                        <i data-lucide="shield-check" class="w-6 h-6 text-rose-400"></i>
+                    </div>
+                    <h3 class="text-lg text-white serif mb-2 field-placeholder">[Pilar 3 del método]</h3>
+                    <p class="text-sm text-slate-400 field-placeholder">[Descripción breve]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Publicaciones / Medios -->
+    <section id="publicaciones" class="relative py-24 bg-slate-900/40">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <div class="mb-14 reveal-up">
+                <p class="text-rose-400 text-xs font-bold uppercase tracking-widest mb-2">06 — Difusión</p>
+                <h2 class="text-4xl lg:text-5xl text-white">Publicaciones y Apariciones en Medios</h2>
+            </div>
+
+            <div class="space-y-4 reveal-up">
+                <div class="glass-panel rounded-xl p-5 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="book-open" class="w-5 h-5 text-rose-400 shrink-0"></i>
+                        <span class="text-slate-300 field-placeholder">[Título de artículo, paper o entrevista]</span>
+                    </div>
+                    <span class="text-xs text-slate-500 field-placeholder">[Año / Medio]</span>
+                </div>
+                <div class="glass-panel rounded-xl p-5 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="mic" class="w-5 h-5 text-rose-400 shrink-0"></i>
+                        <span class="text-slate-300 field-placeholder">[Charla, podcast o conferencia]</span>
+                    </div>
+                    <span class="text-xs text-slate-500 field-placeholder">[Año / Medio]</span>
+                </div>
+                <div class="glass-panel rounded-xl p-5 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <i data-lucide="newspaper" class="w-5 h-5 text-rose-400 shrink-0"></i>
+                        <span class="text-slate-300 field-placeholder">[Nota de prensa o colaboración]</span>
+                    </div>
+                    <span class="text-xs text-slate-500 field-placeholder">[Año / Medio]</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Idiomas -->
+    <section id="idiomas" class="relative py-24">
+        <div class="container mx-auto px-6 max-w-4xl">
+            <div class="mb-14 reveal-up">
+                <p class="text-rose-400 text-xs font-bold uppercase tracking-widest mb-2">07 — Comunicación</p>
+                <h2 class="text-4xl lg:text-5xl text-white">Idiomas</h2>
+            </div>
+
+            <div class="grid sm:grid-cols-3 gap-6 reveal-up">
+                <div class="glass-panel rounded-xl p-5 text-center">
+                    <p class="text-white font-semibold field-placeholder">[Idioma 1]</p>
+                    <p class="text-xs text-slate-400 mt-1 field-placeholder">[Nivel — ej: Nativo]</p>
+                </div>
+                <div class="glass-panel rounded-xl p-5 text-center">
+                    <p class="text-white font-semibold field-placeholder">[Idioma 2]</p>
+                    <p class="text-xs text-slate-400 mt-1 field-placeholder">[Nivel]</p>
+                </div>
+                <div class="glass-panel rounded-xl p-5 text-center">
+                    <p class="text-white font-semibold field-placeholder">[Idioma 3]</p>
+                    <p class="text-xs text-slate-400 mt-1 field-placeholder">[Nivel]</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA final -->
+    <section class="relative py-24">
+        <div class="container mx-auto px-6">
+            <div class="glass-panel rounded-2xl p-10 lg:p-16 text-center max-w-3xl mx-auto reveal-up">
+                <h2 class="text-3xl lg:text-4xl text-white mb-4">¿Querés conocer más sobre el método?</h2>
+                <p class="text-slate-400 mb-8">Agendá una entrevista personal para evaluar si sos un buen fit para el proceso.</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button onclick="openModal()" class="inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-8 py-4 rounded-lg font-medium transition">
+                        Agendar Entrevista
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                    <a href="Matchmaking.html" class="inline-flex items-center justify-center gap-2 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white px-8 py-4 rounded-lg font-medium transition">
+                        Volver al sitio principal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Form -->
+    <div id="applicationModal" class="fixed inset-0 z-[100] hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[90vh] overflow-y-auto glass-panel rounded-2xl p-8 border border-white/10 transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-serif font-bold text-white">Tu Primer Paso</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <p class="text-slate-400 mb-6 text-sm">Completá este formulario para que podamos conocerte mejor y evaluar si calificás. Respondemos en menos de 24hs.</p>
+
+            <form id="leadForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre Completo</label>
+                    <input type="text" name="nombre" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">WhatsApp / Teléfono</label>
+                        <input type="tel" name="telefono" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Edad</label>
+                        <input type="number" name="edad" min="18" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Género</label>
+                        <select name="genero" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white transition">
+                            <option value="" disabled selected>Seleccioná</option>
+                            <option>Mujer</option>
+                            <option>Hombre</option>
+                            <option>Prefiero no especificar</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ciudad de Residencia</label>
+                        <input type="text" name="ciudad" placeholder="Ej: Buenos Aires, CABA" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ocupación</label>
+                        <input type="text" name="ocupacion" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Estado Civil Actual</label>
+                        <select name="estado_civil" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white transition">
+                            <option value="" disabled selected>Seleccioná</option>
+                            <option>Soltero/a</option>
+                            <option>Separado/a o Divorciado/a</option>
+                            <option>Viudo/a</option>
+                            <option>Prefiero no decir</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">¿Qué estás buscando?</label>
+                        <select name="busqueda" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white transition">
+                            <option value="" disabled selected>Seleccioná</option>
+                            <option>Una relación seria y comprometida</option>
+                            <option>Compañía y conexión genuina</option>
+                            <option>Aún estoy explorando</option>
+                            <option>Prefiero conversarlo en la entrevista</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">¿Cómo nos conociste? <span class="normal-case font-normal text-slate-600">(opcional)</span></label>
+                    <select name="referencia" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white transition">
+                        <option value="" selected>Seleccioná</option>
+                        <option>Instagram</option>
+                        <option>Recomendación de un/a amigo/a</option>
+                        <option>Búsqueda en Google</option>
+                        <option>Otro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Comentarios <span class="normal-case font-normal text-slate-600">(opcional)</span></label>
+                    <textarea name="comentarios" rows="3" placeholder="¿Hay algo puntual que quieras contarnos o preguntarnos antes de la entrevista?" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition resize-none"></textarea>
+                </div>
+                <label class="flex items-start gap-2 text-xs text-slate-400">
+                    <input type="checkbox" required class="mt-1 accent-rose-600">
+                    Acepto ser contactado/a para coordinar la entrevista y confirmo que la información brindada es confidencial y veraz.
+                </label>
+
+                <button type="submit" class="w-full bg-white text-slate-900 hover:bg-rose-50 py-4 rounded-lg font-bold mt-4 transition transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                    <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2.003c-5.523 0-10 4.477-10 10 0 1.766.464 3.44 1.29 4.9L2 22l5.245-1.375A9.955 9.955 0 0012.004 22c5.522 0 10-4.478 10-10s-4.478-9.997-10-9.997zm0 18.166a8.15 8.15 0 01-4.152-1.13l-.298-.177-3.11.815.83-3.03-.194-.31a8.166 8.166 0 01-1.256-4.337c0-4.512 3.673-8.184 8.184-8.184 4.512 0 8.183 3.672 8.183 8.184 0 4.512-3.671 8.169-8.187 8.169z"/></svg>
+                    Enviar por WhatsApp
+                </button>
+                <p class="text-xs text-center text-slate-600 mt-2">Tu información es 100% confidencial. Se abrirá WhatsApp con tus datos ya cargados.</p>
+            </form>
+        </div>
+    </div>
+
+    <footer class="relative py-10 border-t border-white/5">
+        <div class="container mx-auto px-6 text-center text-xs text-slate-500">
+            © 2026 Ana Carolina Alves de Oliveira — Curriculum Vitae. Contenido de ejemplo, pendiente de completar.
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // --- Neural Network Background Animation ---
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+        let particlesArray;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Particle {
+            constructor(x, y, directionX, directionY, size) {
+                this.x = x;
+                this.y = y;
+                this.directionX = directionX;
+                this.directionY = directionY;
+                this.size = size;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = '#e11d48';
+                ctx.fill();
+            }
+            update() {
+                if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 2) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * 0.4) - 0.2;
+                let directionY = (Math.random() * 0.4) - 0.2;
+                particlesArray.push(new Particle(x, y, directionX, directionY, size));
+            }
+        }
+
+        function connect() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) +
+                                   ((particlesArray[a].y - particlesArray[b].y) ** 2);
+                    if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                        opacityValue = 1 - (distance / 20000);
+                        ctx.strokeStyle = 'rgba(225, 29, 72,' + opacityValue + ')';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            connect();
+        }
+
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            initParticles();
+        });
+
+        // --- Mouse Glow Effect ---
+        const glow = document.getElementById('cursor-glow');
+        document.addEventListener('mousemove', (e) => {
+            glow.style.left = e.clientX + 'px';
+            glow.style.top = e.clientY + 'px';
+        });
+
+        // --- GSAP Reveal Animations ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        gsap.utils.toArray('.reveal-up').forEach(element => {
+            gsap.to(element, {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: element,
+                    start: "top 90%",
+                }
+            });
+        });
+
+        // --- Modal Logic ---
+        const modal = document.getElementById('applicationModal');
+        const modalContent = document.getElementById('modalContent');
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // --- Número de WhatsApp de Ana (con código de país, sin '+' ni espacios) ---
+        const WHATSAPP_NUMERO = "5491130404077";
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+
+            btn.innerText = "Procesando...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerText = "Abriendo WhatsApp...";
+                btn.classList.replace('bg-white', 'bg-green-500');
+                btn.classList.replace('text-slate-900', 'text-white');
+
+                // --- Armar el mensaje con los datos completados ---
+                const data = new FormData(form);
+                const campos = [
+                    ['Nombre', 'nombre'],
+                    ['Email', 'email'],
+                    ['Teléfono / WhatsApp', 'telefono'],
+                    ['Edad', 'edad'],
+                    ['Género', 'genero'],
+                    ['Ciudad de residencia', 'ciudad'],
+                    ['Ocupación', 'ocupacion'],
+                    ['Estado civil actual', 'estado_civil'],
+                    ['Qué está buscando', 'busqueda'],
+                    ['Cómo me conoció', 'referencia'],
+                    ['Comentarios', 'comentarios'],
+                ];
+
+                let mensaje = "Hola Ana! Quiero aplicar al proceso de matchmaking. Estos son mis datos:\n\n";
+                campos.forEach(([etiqueta, nombreCampo]) => {
+                    const valor = (data.get(nombreCampo) || '').toString().trim();
+                    if (valor) {
+                        mensaje += `*${etiqueta}:* ${valor}\n`;
+                    }
+                });
+
+                const urlWhatsApp = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(mensaje)}`;
+
+                setTimeout(() => {
+                    window.open(urlWhatsApp, '_blank');
+                    closeModal();
+                    form.reset();
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    btn.classList.replace('bg-green-500', 'bg-white');
+                    btn.classList.replace('text-white', 'text-slate-900');
+                }, 900);
+            }, 700);
+        }
+    </script>
+</body>
+</html>
