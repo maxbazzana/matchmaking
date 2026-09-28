@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana Carolina Alves de Oliveira | Science-Based Matchmaking</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/cormorant-garamond@5.3.0/index.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.19/index.css">
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+
+    <!-- Animation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #0f172a; /* Slate 900 */
+            --accent: #e11d48; /* Rose 600 */
+            --gold: #d97706; /* Amber 600 */
+            --text-main: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .serif {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        /* Animated Background Canvas */
+        #neural-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        /* Glassmorphism Cards */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glass-card-hover:hover {
+            border-color: rgba(225, 29, 72, 0.3);
+            box-shadow: 0 0 30px rgba(225, 29, 72, 0.1);
+            transform: translateY(-5px);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Text Gradients */
+        .text-gradient-gold {
+            background: linear-gradient(to right, #fbbf24, #d97706);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        /* Interactive Cursor Glow (JS driven) */
+        .cursor-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(225,29,72,0.15) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-rose-500 selection:text-white">
+
+    <!-- Dynamic Background -->
+    <canvas id="neural-canvas"></canvas>
+    <div id="cursor-glow" class="cursor-glow hidden md:block"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300 py-6 px-6 lg:px-12">
+        <div class="max-w-7xl mx-auto glass-panel rounded-full px-4 sm:px-6 py-3 flex justify-between items-center border-white/5 relative">
+            <div class="text-base sm:text-xl font-bold serif tracking-wide text-white truncate">
+                <span class="sm:hidden">Ana Carolina <span class="text-rose-500">Alves</span></span>
+                <span class="hidden sm:inline">Ana Carolina <span class="text-rose-500">Alves de Oliveira</span></span>
+            </div>
+            <div class="hidden md:flex space-x-8 text-sm font-medium text-slate-300">
+                <a href="#method" class="hover:text-white transition">The Method</a>
+                <a href="curriculum.html" class="hover:text-white transition">The Psychologist</a>
+                <a href="#testimonials" class="hover:text-white transition">Real Stories</a>
+                <a href="#pricing" class="hover:text-white transition">Pricing</a>
+            </div>
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                <button onclick="openModal()" class="bg-white text-slate-900 hover:bg-rose-50 px-3 py-2 sm:px-6 text-xs sm:text-sm rounded-full font-bold transition transform hover:scale-105 whitespace-nowrap">
+                    Apply Now
+                </button>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-white p-2 -mr-1" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+                    <i data-lucide="menu" class="w-5 h-5" id="menuIconOpen"></i>
+                    <i data-lucide="x" class="w-5 h-5 hidden" id="menuIconClose"></i>
+                </button>
+            </div>
+
+            <!-- Mobile dropdown menu -->
+            <div id="mobileMenu" class="hidden md:hidden absolute top-full left-0 right-0 mt-3 border border-white/10 shadow-2xl rounded-2xl p-3 flex flex-col gap-1 text-sm font-medium text-slate-300" style="background-color: #0f172a;">
+                <a href="#method" onclick="closeMobileMenu()" class="px-4 py-3 rounded-lg hover:bg-white/5 hover:text-white transition">The Method</a>
+                <a href="curriculum.html" onclick="closeMobileMenu()" class="px-4 py-3 rounded-lg hover:bg-white/5 hover:text-white transition">The Psychologist</a>
+                <a href="#testimonials" onclick="closeMobileMenu()" class="px-4 py-3 rounded-lg hover:bg-white/5 hover:text-white transition">Real Stories</a>
+                <a href="#pricing" onclick="closeMobileMenu()" class="px-4 py-3 rounded-lg hover:bg-white/5 hover:text-white transition">Pricing</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative min-h-screen flex items-center pt-32 sm:pt-24 md:pt-20 pb-20 overflow-hidden">
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <div class="lg:w-1/2 space-y-8">
+                    <div class="inline-flex items-center gap-2 px-3 py-2 sm:px-4 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[10px] sm:text-xs font-bold uppercase tracking-wide sm:tracking-widest reveal-up max-w-full text-center flex-wrap justify-center">
+                        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0"></span>
+                        Limited Interview Spots
+                    </div>
+                    
+                    <h1 class="text-6xl lg:text-7xl xl:text-8xl leading-[0.9] text-white reveal-up">
+                        Stop searching.<br>
+                        <span class="italic text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-orange-300">Start finding.</span>
+                    </h1>
+                    
+                    <p class="text-xl text-slate-400 leading-relaxed max-w-lg reveal-up">
+                        Psychological matchmaking for professionals who have outgrown dating apps. Real connections — scientifically validated and personally curated in Buenos Aires.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 pt-4 reveal-up">
+                        <button onclick="openModal()" class="group relative px-8 py-4 bg-rose-600 rounded-lg text-white font-medium overflow-hidden">
+                            <div class="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+                            <span class="relative flex items-center gap-2">
+                                Book an Interview <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition"></i>
+                            </span>
+                        </button>
+                        <a href="#method" class="px-8 py-4 rounded-lg text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 transition flex items-center justify-center gap-2">
+                            Explore the process
+                        </a>
+                    </div>
+                </div>
+
+                <div class="lg:w-1/2 relative reveal-up">
+                    <div class="relative z-10 glass-panel p-2 rounded-2xl rotate-2 hover:rotate-0 transition duration-700">
+                        <img src="photos/photo_Ana.jpg" alt="Ana Carolina Alves de Oliveira" class="rounded-xl w-full h-auto grayscale contrast-125 brightness-90 hover:grayscale-0 hover:contrast-100 hover:brightness-100 transition duration-700">
+                        
+                        <!-- Floating Stats Card -->
+                        <div class="absolute -bottom-6 -left-4 sm:-bottom-8 sm:-left-8 glass-panel p-4 sm:p-6 rounded-xl z-20 max-w-[80%] sm:max-w-xs border-l-4 border-rose-500 animate-float">
+                            <div class="flex items-center gap-4 mb-2">
+                                <div class="p-2 bg-rose-500/20 rounded-lg text-rose-400">
+                                    <i data-lucide="brain" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-white text-lg">Clinical Judgment</p>
+                                    <p class="text-xs text-slate-400">No algorithms. Real psychology.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Problem / Agitation -->
+    <section class="py-24 relative">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="reveal-up">
+                    <h2 class="text-4xl md:text-5xl text-white mb-6">"Swipe Fatigue" is a silent epidemic</h2>
+                    <p class="text-slate-400 text-lg mb-6">
+                        80% of singles report emotional exhaustion. Apps match photos, not values. Your professional time is too valuable to spend filtering through empty profiles.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4 p-4 rounded-lg bg-white/5 border border-white/5">
+                            <i data-lucide="clock" class="text-amber-500 mt-1"></i>
+                            <div>
+                                <h4 class="font-bold text-white">Wasted Time</h4>
+                                <p class="text-sm text-slate-400">Date after date with no depth and no real future.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 rounded-lg bg-white/5 border border-white/5">
+                            <i data-lucide="shield-alert" class="text-amber-500 mt-1"></i>
+                            <div>
+                                <h4 class="font-bold text-white">Lack of Privacy</h4>
+                                <p class="text-sm text-slate-400">Unnecessary public exposure on mass-market platforms.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative h-[280px] sm:h-[340px] md:h-[400px] glass-panel rounded-2xl overflow-hidden reveal-up group">
+                    <img src="photos/photo_burnout.png" alt="Digital burnout" class="absolute inset-0 w-full h-full object-cover object-[30%_center] sm:object-center opacity-80">
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-slate-900/80 z-10"></div>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20 px-4">
+                        <div class="text-5xl sm:text-6xl font-bold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] transition duration-500">80%</div>
+                        <p class="text-white font-serif italic mt-2 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]">Experience digital burnout</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Solution / Methodology -->
+    <section id="method" class="py-24 bg-slate-900/50 relative">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-20 reveal-up">
+                <h2 class="text-4xl md:text-5xl text-white mb-6">Science + Human Intuition</h2>
+                <p class="text-slate-400">AI rules out who is NOT right for you. I find who IS — through validated assessment tools and clinical judgment.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Step 1 -->
+                <div class="glass-panel glass-card-hover p-8 rounded-2xl relative overflow-hidden reveal-up group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                        <i data-lucide="user-search" class="w-24 h-24 text-white"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-rose-600 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-lg shadow-rose-900/50">1</div>
+                    <h3 class="text-2xl font-serif text-white mb-4">In-Depth Interview</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        A 50-minute session. We explore your history, values, and attachment patterns. It's not a form — it's a relational assessment.
+                    </p>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="glass-panel glass-card-hover p-8 rounded-2xl relative overflow-hidden reveal-up group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                        <i data-lucide="sparkles" class="w-24 h-24 text-white"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-600 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-lg shadow-amber-900/50">2</div>
+                    <h3 class="text-2xl font-serif text-white mb-4">Hybrid Curation</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Technology to filter out the noise (age, location, deal-breakers) and my clinical judgment to select for real emotional compatibility.
+                    </p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="glass-panel glass-card-hover p-8 rounded-2xl relative overflow-hidden reveal-up group">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition">
+                        <i data-lucide="heart-handshake" class="w-24 h-24 text-white"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold text-xl mb-6 shadow-lg shadow-emerald-900/50">3</div>
+                    <h3 class="text-2xl font-serif text-white mb-4">Introduction & Feedback</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        You're never on your own. You get guidance before the date and a follow-up feedback session to adjust course if needed.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Target Audience -->
+    <section class="py-20 border-t border-white/5">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-serif text-center text-white mb-12 reveal-up">Designed for Select Profiles</h2>
+            <div class="flex flex-wrap justify-center gap-4 reveal-up">
+                <span class="px-6 py-3 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:text-white transition cursor-default">Executives & Entrepreneurs</span>
+                <span class="px-6 py-3 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:text-white transition cursor-default">Expats & Diplomats</span>
+                <span class="px-6 py-3 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:text-white transition cursor-default">Professionals aged 30–50</span>
+                <span class="px-6 py-3 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:bg-rose-500/20 hover:border-rose-500/50 hover:text-white transition cursor-default">Post-Divorce / Starting Over</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-24 relative overflow-hidden">
+        <!-- Decorative glow -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-rose-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="text-center max-w-2xl mx-auto mb-10 reveal-up">
+                <p class="text-rose-400 text-xs font-bold uppercase tracking-widest mb-3">Pricing</p>
+                <h2 class="text-4xl lg:text-5xl text-white">Choose the level of support you need.</h2>
+            </div>
+
+            <div class="max-w-2xl mx-auto mb-16 glass-panel rounded-xl px-6 py-6 text-center reveal-up border border-rose-500/20">
+                <p class="text-sm text-slate-300 leading-relaxed mb-5">
+                    <span class="text-rose-300 font-bold">Limited interview spots:</span>
+                    we work with a small number of people each period so every process gets the attention and curation it deserves. This price applies to interview spots available until <span class="text-white font-semibold">September 14, 2026</span>.
+                </p>
+
+                <div id="countdownActive" class="flex items-center justify-center gap-2 sm:gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl sm:text-3xl font-bold text-white tabular-nums" id="cdDays">4</div>
+                        <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Days</div>
+                    </div>
+                    <div class="text-xl sm:text-2xl text-rose-500/50 -mt-4">:</div>
+                    <div class="text-center">
+                        <div class="text-2xl sm:text-3xl font-bold text-white tabular-nums" id="cdHours">00</div>
+                        <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Hours</div>
+                    </div>
+                    <div class="text-xl sm:text-2xl text-rose-500/50 -mt-4">:</div>
+                    <div class="text-center">
+                        <div class="text-2xl sm:text-3xl font-bold text-white tabular-nums" id="cdMinutes">00</div>
+                        <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Min</div>
+                    </div>
+                    <div class="text-xl sm:text-2xl text-rose-500/50 -mt-4">:</div>
+                    <div class="text-center">
+                        <div class="text-2xl sm:text-3xl font-bold text-white tabular-nums" id="cdSeconds">00</div>
+                        <div class="text-[10px] uppercase tracking-widest text-slate-500 mt-1">Sec</div>
+                    </div>
+                </div>
+
+                <div id="countdownExpired" class="hidden">
+                    <p class="text-sm text-slate-400">Spots for this period are now closed.</p>
+                    <button onclick="openModal()" class="mt-3 inline-flex items-center gap-2 text-rose-300 hover:text-white text-sm font-bold transition">
+                        Check current availability
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                
+                <!-- Basic -->
+                <div class="glass-panel p-8 rounded-2xl border-t border-white/10 reveal-up flex flex-col">
+                    <h3 class="text-xl font-bold text-slate-300">Essential</h3>
+                    <p class="text-slate-500 text-sm mt-2">Your entry point to the process.</p>
+                    <div class="my-8">
+                        <span class="text-3xl font-bold text-white">Inquire</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 flex-1 text-sm text-slate-400">
+                        <li class="flex gap-3"><i data-lucide="check" class="text-slate-500 w-5 h-5"></i> Diagnostic Interview</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="text-slate-500 w-5 h-5"></i> Basic Psychological Profile</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="text-slate-500 w-5 h-5"></i> 1 Curated Introduction</li>
+                    </ul>
+                    <button onclick="openModal('Essential')" class="w-full py-3 border border-slate-600 rounded-lg text-slate-300 hover:bg-white hover:text-slate-900 transition font-medium">Request Info</button>
+                </div>
+
+                <!-- Premium (Featured) -->
+                <div class="glass-panel p-8 rounded-2xl border border-rose-500/50 relative shadow-2xl shadow-rose-900/20 lg:scale-105 z-10 bg-slate-800/80 reveal-up flex flex-col">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-rose-600 to-orange-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-lg whitespace-nowrap">
+                        August Spots
+                    </div>
+                    <h3 class="text-xl font-bold text-white">Premium Match</h3>
+                    <p class="text-rose-200 text-sm mt-2">Committed to results.</p>
+                    <div class="my-8">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg text-slate-500 line-through">USD 3,450</span>
+                            <span class="text-4xl font-bold text-white">USD 2,290</span>
+                        </div>
+                        <span class="text-slate-400 text-sm block mt-1">/ 3 months · limited-spot pricing</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 flex-1 text-sm text-slate-300">
+                        <li class="flex gap-3"><i data-lucide="check-circle-2" class="text-rose-500 w-5 h-5"></i> <strong>Everything in Essential</strong></li>
+                        <li class="flex gap-3"><i data-lucide="check-circle-2" class="text-rose-500 w-5 h-5"></i> 3 to 5 Guaranteed Introductions</li>
+                        <li class="flex gap-3"><i data-lucide="check-circle-2" class="text-rose-500 w-5 h-5"></i> Detailed Compatibility Report</li>
+                        <li class="flex gap-3"><i data-lucide="check-circle-2" class="text-rose-500 w-5 h-5"></i> Dating Coaching (Feedback)</li>
+                        <li class="flex gap-3"><i data-lucide="check-circle-2" class="text-rose-500 w-5 h-5"></i> Passive Database Access</li>
+                    </ul>
+                    <button onclick="openModal('Premium')" class="w-full py-4 bg-gradient-to-r from-rose-600 to-rose-700 rounded-lg text-white font-bold hover:shadow-lg hover:shadow-rose-600/40 transition transform hover:-translate-y-1">Apply at Special Price</button>
+                    <p class="text-xs text-slate-500 text-center mt-3">If we don't reach the committed number of introductions within the agreed timeframe, we extend your support at no extra cost until we do.</p>
+                </div>
+
+                <!-- VIP -->
+                <div class="glass-panel p-8 rounded-2xl border-t border-white/10 reveal-up flex flex-col">
+                    <h3 class="text-xl font-bold text-slate-300">Expat / Executive</h3>
+                    <p class="text-slate-500 text-sm mt-2">A fully "turnkey" service.</p>
+                    <div class="my-8">
+                        <span class="text-3xl font-bold text-white">Custom</span>
+                    </div>
+                    <ul class="space-y-4 mb-8 flex-1 text-sm text-slate-400">
+                        <li class="flex gap-3"><i data-lucide="check" class="text-slate-500 w-5 h-5"></i> Active Personalized Search</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="text-slate-500 w-5 h-5"></i> Unlimited Introductions (6 months)</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="text-slate-500 w-5 h-5"></i> Image & Profile Consulting</li>
+                        <li class="flex gap-3"><i data-lucide="check" class="text-slate-500 w-5 h-5"></i> Top Priority</li>
+                    </ul>
+                    <button onclick="openModal('VIP')" class="w-full py-3 border border-slate-600 rounded-lg text-slate-300 hover:bg-white hover:text-slate-900 transition font-medium">Schedule a Call</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="py-24 relative border-t border-white/5">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-2xl mx-auto mb-16 reveal-up">
+                <p class="text-rose-400 text-xs font-bold uppercase tracking-widest mb-3">What they say</p>
+                <h2 class="text-4xl lg:text-5xl text-white">Real stories from people who have been through the process.</h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="glass-panel glass-card-hover rounded-2xl p-8 flex flex-col justify-between transition duration-500 reveal-up">
+                    <div>
+                        <i data-lucide="quote" class="w-8 h-8 text-rose-500/40 mb-4"></i>
+                        <p class="text-lg text-slate-200 leading-relaxed italic">
+                            "I was exhausted by the apps: a thousand matches and not one real conversation. With Ana I had genuine interviews — someone actually listening to what I was looking for. On the third introduction I met someone I truly shared values with."
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-6 border-t border-white/10">
+                        <p class="font-bold text-white">Manuela</p>
+                        <p class="text-xs text-slate-500">Lawyer · 34 · Bogotá, Colombia</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel glass-card-hover rounded-2xl p-8 flex flex-col justify-between transition duration-500 reveal-up">
+                    <div>
+                        <i data-lucide="quote" class="w-8 h-8 text-rose-500/40 mb-4"></i>
+                        <p class="text-lg text-slate-200 leading-relaxed italic">
+                            "I had neither the time nor the energy to keep filtering profiles after a 12-hour workday. Here, someone did that filtering for me — with clinical judgment, not an algorithm. It was the first time I felt my time was respected."
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-6 border-t border-white/10">
+                        <p class="font-bold text-white">Fernando</p>
+                        <p class="text-xs text-slate-500">Sales Director · 41 · Madrid, Spain</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel glass-card-hover rounded-2xl p-8 flex flex-col justify-between transition duration-500 reveal-up">
+                    <div>
+                        <i data-lucide="quote" class="w-8 h-8 text-rose-500/40 mb-4"></i>
+                        <p class="text-lg text-slate-200 leading-relaxed italic">
+                            "After my divorce I didn't even know where to start. I needed discretion and, at the same time, real support — not just one more contact. The process helped me get clear on what I was looking for before being introduced to anyone, and that changed everything."
+                        </p>
+                    </div>
+                    <div class="mt-6 pt-6 border-t border-white/10">
+                        <p class="font-bold text-white">Marina</p>
+                        <p class="text-xs text-slate-500">Physician · 45 · Buenos Aires, Argentina</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 bg-slate-950 py-12">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0 text-center md:text-left">
+                    <h4 class="text-2xl font-serif text-white mb-2">Ana Carolina Alves de Oliveira</h4>
+                    <p class="text-sm text-slate-500">Licensed Psychologist & Professional Matchmaker</p>
+                </div>
+                <div class="flex gap-6 text-sm text-slate-400">
+                    <button onclick="openInfoModal('privacyModal')" class="hover:text-rose-400 transition">Privacy</button>
+                    <button onclick="openInfoModal('termsModal')" class="hover:text-rose-400 transition">Terms</button>
+                    <button onclick="openModal()" class="hover:text-rose-400 transition">Contact</button>
+                </div>
+            </div>
+            <div class="mt-8 text-center text-xs text-slate-600">
+                © 2026 All rights reserved. Buenos Aires, Argentina.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal Form -->
+    <div id="applicationModal" class="fixed inset-0 z-[100] hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeModal()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-lg max-h-[90vh] overflow-y-auto glass-panel rounded-2xl p-5 sm:p-8 border border-white/10 transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-serif font-bold text-white">Your First Step</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <p class="text-slate-400 mb-6 text-sm">Fill out this form so we can get to know you better and assess whether you qualify. We reply within 24 hours.</p>
+            
+            <form id="leadForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Full Name</label>
+                    <input type="text" name="full_name" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Email</label>
+                        <input type="email" name="email" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">WhatsApp / Phone</label>
+                        <input type="tel" name="phone" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Age</label>
+                        <input type="number" name="age" min="18" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Gender</label>
+                        <select name="gender" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white transition">
+                            <option value="" disabled selected class="text-slate-500">Select</option>
+                            <option>Woman</option>
+                            <option>Man</option>
+                            <option>Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">City of Residence</label>
+                        <input type="text" name="city" placeholder="e.g. Buenos Aires, CABA" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Occupation</label>
+                        <input type="text" name="occupation" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Current Relationship Status</label>
+                        <select name="relationship_status" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white transition">
+                            <option value="" disabled selected>Select</option>
+                            <option>Single</option>
+                            <option>Separated or Divorced</option>
+                            <option>Widowed</option>
+                            <option>Prefer not to say</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">What are you looking for?</label>
+                        <select name="looking_for" required class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white transition">
+                            <option value="" disabled selected>Select</option>
+                            <option>A serious, committed relationship</option>
+                            <option>Companionship and genuine connection</option>
+                            <option>Still exploring</option>
+                            <option>I'd rather discuss it in the interview</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">How did you hear about us? <span class="normal-case font-normal text-slate-600">(optional)</span></label>
+                    <select name="referral" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white transition">
+                        <option value="" selected>Select</option>
+                        <option>Instagram</option>
+                        <option>Referral from a friend</option>
+                        <option>Google search</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Comments <span class="normal-case font-normal text-slate-600">(optional)</span></label>
+                    <textarea name="comments" rows="3" placeholder="Is there anything specific you'd like to tell us or ask before the interview?" class="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent outline-none text-white placeholder-slate-600 transition resize-none"></textarea>
+                </div>
+                <label class="flex items-start gap-2 text-xs text-slate-400">
+                    <input type="checkbox" required class="mt-1 accent-rose-600">
+                    I agree to be contacted to schedule the interview and confirm that the information provided is truthful and confidential.
+                </label>
+
+                <button type="submit" class="w-full bg-white text-slate-900 hover:bg-rose-50 py-4 rounded-lg font-bold mt-4 transition transform hover:scale-[1.02] flex items-center justify-center gap-2">
+                    <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.004 2.003c-5.523 0-10 4.477-10 10 0 1.766.464 3.44 1.29 4.9L2 22l5.245-1.375A9.955 9.955 0 0012.004 22c5.522 0 10-4.478 10-10s-4.478-9.997-10-9.997zm0 18.166a8.15 8.15 0 01-4.152-1.13l-.298-.177-3.11.815.83-3.03-.194-.31a8.166 8.166 0 01-1.256-4.337c0-4.512 3.673-8.184 8.184-8.184 4.512 0 8.183 3.672 8.183 8.184 0 4.512-3.671 8.169-8.187 8.169z"/></svg>
+                    Send via WhatsApp
+                </button>
+                <p class="text-xs text-center text-slate-600 mt-2">Your information is 100% confidential. WhatsApp will open with your details already filled in.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Privacy Policy -->
+    <div id="privacyModal" class="fixed inset-0 z-[100] hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeInfoModal('privacyModal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-2xl max-h-[85vh] overflow-y-auto glass-panel rounded-2xl p-5 sm:p-8 border border-white/10 transform scale-95 transition-transform duration-300" id="privacyModalContent">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-2xl font-serif font-bold text-white">Privacy Policy</h3>
+                    <p class="text-xs text-slate-500 mt-1">Last updated: August 2026</p>
+                </div>
+                <button onclick="closeInfoModal('privacyModal')" class="text-slate-400 hover:text-white transition shrink-0"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <div class="mt-4 space-y-5 text-sm text-slate-300 leading-relaxed">
+                <p>At Ana Carolina Alves de Oliveira — Psychological Matchmaking (hereinafter, "the Service"), we understand that the information you share with us is personal and sensitive in nature. This Privacy Policy clearly explains what data we collect, how we use it, who we share it with, and what rights you have over it.</p>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">1. Data controller</h4>
+                    <p>Ana Carolina Alves de Oliveira, Licensed Psychologist, based in Buenos Aires, Argentina, is the controller of the personal data collected through this website and its associated contact channels (form, WhatsApp, email).</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">2. What information we collect</h4>
+                    <p>We collect only the information necessary to evaluate your profile and carry out the matchmaking process:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>Identification and contact details: name, age, gender, email, phone/WhatsApp, and city of residence.</li>
+                        <li>Sociodemographic information: occupation and current relationship status.</li>
+                        <li>Preferences and relationship goals you voluntarily share with us.</li>
+                        <li>Any additional comments or observations you choose to share in the form or during the interview.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">3. How we use your information</h4>
+                    <p>Your data is used exclusively to:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>Assess whether your profile is a fit for the service and our methodology.</li>
+                        <li>Schedule the initial interview and subsequent communications.</li>
+                        <li>Design and curate potential introductions within the matchmaking process.</li>
+                        <li>Answer your questions and provide follow-up throughout the process.</li>
+                    </ul>
+                    <p class="mt-2">We do not use your information for third-party advertising or to build databases for purposes unrelated to the contracted service.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">4. Confidentiality</h4>
+                    <p>Discretion is a cornerstone of the service. Your personal information is never published, displayed publicly, or shared with a potential match without your prior, express consent. Every introduction is curated and controlled, always respecting your privacy.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">5. Who we share your information with</h4>
+                    <p>We do not sell, rent, or transfer your personal data to third parties for commercial purposes. We may only share limited information with:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>Service providers strictly necessary to operate the website and communications (for example, hosting or messaging tools), who are required to keep the data confidential.</li>
+                        <li>Competent authorities, only when required by a legal obligation.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">6. Data retention</h4>
+                    <p>We retain your information for the duration of the matchmaking process and for any reasonable additional period required by our legal or accounting obligations. You may request deletion of your data at any time, as detailed in the next section.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">7. Your rights</h4>
+                    <p>As the owner of your personal data, and in accordance with the data protection laws in force in your country of residence (for example, Law 25,326 in Argentina, the GDPR in Spain, the LFPDPPP in Mexico, Law 1581 of 2012 in Colombia, or equivalent regulations elsewhere in Latin America), you have the right to:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li><strong class="text-slate-200">Access</strong> the personal data we hold about you.</li>
+                        <li><strong class="text-slate-200">Rectify</strong> inaccurate or outdated data.</li>
+                        <li><strong class="text-slate-200">Cancel / delete</strong> your data from our records.</li>
+                        <li><strong class="text-slate-200">Object</strong> to the use of your data for specific purposes.</li>
+                    </ul>
+                    <p class="mt-2">To exercise any of these rights, contact us through the channels listed at the end of this document.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">8. Information security</h4>
+                    <p>We adopt reasonable technical and organizational measures to protect your information against loss, misuse, unauthorized access, or alteration. No system is 100% foolproof, but we actively work to keep your data secure.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">9. Minors</h4>
+                    <p>This service is intended exclusively for people over 18 years of age. We do not knowingly collect information from minors.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">10. Changes to this policy</h4>
+                    <p>This Privacy Policy may be updated periodically to reflect changes in our practices or in applicable regulations. We recommend reviewing it from time to time.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">11. Contact</h4>
+                    <p>For any questions about this policy or how your data is handled, you can reach us via WhatsApp or through the contact form on this website.</p>
+                </div>
+            </div>
+
+            <button onclick="closeInfoModal('privacyModal')" class="w-full bg-white text-slate-900 hover:bg-rose-50 py-3 rounded-lg font-bold mt-8 transition">
+                Got it
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal: Terms and Conditions -->
+    <div id="termsModal" class="fixed inset-0 z-[100] hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onclick="closeInfoModal('termsModal')"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[92%] max-w-2xl max-h-[85vh] overflow-y-auto glass-panel rounded-2xl p-5 sm:p-8 border border-white/10 transform scale-95 transition-transform duration-300" id="termsModalContent">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-2xl font-serif font-bold text-white">Terms and Conditions</h3>
+                    <p class="text-xs text-slate-500 mt-1">Last updated: August 2026</p>
+                </div>
+                <button onclick="closeInfoModal('termsModal')" class="text-slate-400 hover:text-white transition shrink-0"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+
+            <div class="mt-4 space-y-5 text-sm text-slate-300 leading-relaxed">
+                <p>These Terms and Conditions govern access to and use of the website and the psychological matchmaking service provided by Ana Carolina Alves de Oliveira (hereinafter, "the Service"). By completing the form, contacting us, or using the website, you accept the terms described herein.</p>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">1. Description of the service</h4>
+                    <p>The Service consists of a matchmaking process conducted by a licensed psychologist, combining personal interviews, clinical judgment, and human curation. It is not a dating app or an automated or algorithmic system: every introduction is evaluated and decided on by a professional.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">2. Eligibility</h4>
+                    <p>To apply for the Service, you must be over 18 years of age, have full legal capacity to enter into contracts, and commit to providing truthful, complete, and up-to-date information. We reserve the right to reject or withdraw an application if we detect false or incomplete information.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">3. Application and admission process</h4>
+                    <p>Completing the form or contacting us does not guarantee automatic admission to the Service. All applications are evaluated individually; acceptance is at our sole professional discretion, based on compatibility with the methodology and with the rest of the member community.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">4. Confidentiality and good faith</h4>
+                    <p>Both parties agree to act in good faith throughout the process. Information shared during interviews and communications is treated with strict confidentiality, as detailed in our Privacy Policy.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">5. No guarantee of results</h4>
+                    <p>The Service provides its methodology, professional judgment, and dedication to facilitate quality connections. However, we cannot guarantee specific results or that a relationship will develop, as these depend on many human factors beyond the Service's control.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">6. User obligations</h4>
+                    <p>By using the Service, you agree to:</p>
+                    <ul class="list-disc pl-5 mt-2 space-y-1">
+                        <li>Provide truthful information about your identity, age, relationship status, and other requested details.</li>
+                        <li>Treat the team and anyone introduced to you through the process with respect.</li>
+                        <li>Not use the Service for any purpose other than a genuine search for a relationship.</li>
+                        <li>Promptly report any relevant change in your personal situation (for example, a change in your relationship status).</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">7. Fees</h4>
+                    <p>Current prices, plans, and commercial terms are detailed in the pricing section of the website and may be modified with prior notice. The specifics of each plan are discussed and confirmed during the initial interview.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">8. Intellectual property</h4>
+                    <p>All website content (text, design, described methodology, and associated materials) is the property of Ana Carolina Alves de Oliveira and may not be reproduced, distributed, or used for commercial purposes without prior written authorization.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">9. Limitation of liability</h4>
+                    <p>The Service shall not be liable for indirect damages, financial losses, or emotional consequences arising from meetings or relationships resulting from the matchmaking process, beyond its commitment to always act with professional judgment and in good faith.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">10. Termination of service</h4>
+                    <p>Either the user or the Service may terminate the relationship at any time, subject to the commercial terms agreed upon at the time of engagement.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">11. Changes to the terms</h4>
+                    <p>These Terms and Conditions may be updated periodically. Material changes will be communicated through the website.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">12. Governing law</h4>
+                    <p>This document is governed, where applicable, by the laws of the user's country of residence and the data protection and consumer protection regulations in force there. In the event of any dispute, both parties will first seek to resolve it amicably and directly.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-bold mb-2">13. Contact</h4>
+                    <p>For questions about these Terms and Conditions, you can reach us via WhatsApp or through the contact form on this website.</p>
+                </div>
+            </div>
+
+            <button onclick="closeInfoModal('termsModal')" class="w-full bg-white text-slate-900 hover:bg-rose-50 py-3 rounded-lg font-bold mt-8 transition">
+                Got it
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Interview-spot countdown (same deadline for every visitor) ---
+        // Fixed closing date: 30 days from the launch of this invitation
+        // (August 15, 2026 -> September 14, 2026, 23:59).
+        // Once the date is reached, it is replaced with a real message stating
+        // that spots for that period have closed.
+        (function initCountdown() {
+            const DEADLINE = new Date('2026-09-14T23:59:59').getTime();
+
+            const elDays = document.getElementById('cdDays');
+            const elHours = document.getElementById('cdHours');
+            const elMinutes = document.getElementById('cdMinutes');
+            const elSeconds = document.getElementById('cdSeconds');
+            const activeBox = document.getElementById('countdownActive');
+            const expiredBox = document.getElementById('countdownExpired');
+            if (!elDays || !activeBox) return;
+
+            let intervalId = null;
+
+            function pad(n) { return n.toString().padStart(2, '0'); }
+
+            function tick() {
+                const remaining = DEADLINE - Date.now();
+                if (remaining <= 0) {
+                    activeBox.classList.add('hidden');
+                    expiredBox.classList.remove('hidden');
+                    if (intervalId) clearInterval(intervalId);
+                    return;
+                }
+                const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24);
+                const minutes = Math.floor((remaining / (1000 * 60)) % 60);
+                const seconds = Math.floor((remaining / 1000) % 60);
+
+                elDays.textContent = days;
+                elHours.textContent = pad(hours);
+                elMinutes.textContent = pad(minutes);
+                elSeconds.textContent = pad(seconds);
+            }
+
+            if (DEADLINE - Date.now() > 0) intervalId = setInterval(tick, 1000);
+            tick();
+        })();
+
+        // --- 0. Mobile Menu Toggle ---
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const iconOpen = document.getElementById('menuIconOpen');
+            const iconClose = document.getElementById('menuIconClose');
+            const btn = document.querySelector('[aria-controls="mobileMenu"]');
+            const isHidden = menu.classList.contains('hidden');
+
+            menu.classList.toggle('hidden');
+            iconOpen.classList.toggle('hidden');
+            iconClose.classList.toggle('hidden');
+            if (btn) btn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+        }
+
+        function closeMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (!menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+                document.getElementById('menuIconOpen').classList.remove('hidden');
+                document.getElementById('menuIconClose').classList.add('hidden');
+                const btn = document.querySelector('[aria-controls="mobileMenu"]');
+                if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
+        }
+
+        // --- 1. Neural Network Background Animation ---
+        const canvas = document.getElementById('neural-canvas');
+        const ctx = canvas.getContext('2d');
+        let particlesArray;
+
+        // Set canvas size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color) {
+                this.x = x;
+                this.y = y;
+                this.directionX = directionX;
+                this.directionY = directionY;
+                this.size = size;
+                this.color = color;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = '#e11d48'; // Rose color
+                ctx.fill();
+            }
+            update() {
+                if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+                if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 2) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * 0.4) - 0.2;
+                let directionY = (Math.random() * 0.4) - 0.2;
+                let color = '#e11d48';
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+            }
+        }
+
+        function connect() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + 
+                                   ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    if (distance < (canvas.width/7) * (canvas.height/7)) {
+                        opacityValue = 1 - (distance/20000);
+                        ctx.strokeStyle = 'rgba(225, 29, 72,' + opacityValue + ')'; // Rose lines
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animateParticles() {
+            requestAnimationFrame(animateParticles);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            connect();
+        }
+
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            canvas.width = innerWidth;
+            canvas.height = innerHeight;
+            initParticles();
+        });
+
+        // --- 2. Mouse Glow Effect ---
+        const glow = document.getElementById('cursor-glow');
+        document.addEventListener('mousemove', (e) => {
+            glow.style.left = e.clientX + 'px';
+            glow.style.top = e.clientY + 'px';
+        });
+
+        // --- 3. GSAP Animations ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        gsap.utils.toArray('.reveal-up').forEach(element => {
+            gsap.to(element, {
+                opacity: 1,
+                y: 0,
+                duration: 1,
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: element,
+                    start: "top 85%",
+                }
+            });
+        });
+
+        // --- 4. Modal Logic ---
+        const modal = document.getElementById('applicationModal');
+        const modalContent = document.getElementById('modalContent');
+        let selectedPlan = '';
+
+        function openModal(planName = '') {
+            selectedPlan = planName;
+            modal.classList.remove('hidden');
+            // Small delay to allow display:block to apply before opacity transition
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // --- Info modals (Privacy / Terms) ---
+        function openInfoModal(id) {
+            const infoModal = document.getElementById(id);
+            const infoContent = document.getElementById(id + 'Content');
+            infoModal.classList.remove('hidden');
+            setTimeout(() => {
+                infoModal.classList.remove('opacity-0');
+                infoContent.classList.remove('scale-95');
+                infoContent.classList.add('scale-100');
+            }, 10);
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeInfoModal(id) {
+            const infoModal = document.getElementById(id);
+            const infoContent = document.getElementById(id + 'Content');
+            infoModal.classList.add('opacity-0');
+            infoContent.classList.remove('scale-100');
+            infoContent.classList.add('scale-95');
+            setTimeout(() => {
+                infoModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // If arriving from another page (e.g. curriculum.html) with a request to schedule,
+        // open the form automatically.
+        if (new URLSearchParams(window.location.search).get('schedule') === '1') {
+            window.addEventListener('DOMContentLoaded', () => openModal());
+        }
+
+
+        // --- Ana's WhatsApp number (with country code, no '+' or spaces) ---
+        const WHATSAPP_NUMBER = "5491130404077";
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('button[type="submit"]');
+            const originalHTML = btn.innerHTML;
+
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerText = "Opening WhatsApp...";
+                btn.classList.replace('bg-white', 'bg-green-500');
+                btn.classList.replace('text-slate-900', 'text-white');
+
+                // --- Build the message from the completed fields ---
+                const data = new FormData(form);
+                const fields = [
+                    ['Name', 'full_name'],
+                    ['Email', 'email'],
+                    ['Phone / WhatsApp', 'phone'],
+                    ['Age', 'age'],
+                    ['Gender', 'gender'],
+                    ['City of residence', 'city'],
+                    ['Occupation', 'occupation'],
+                    ['Current relationship status', 'relationship_status'],
+                    ['Looking for', 'looking_for'],
+                    ['How they heard about me', 'referral'],
+                    ['Comments', 'comments'],
+                ];
+
+                let message = "Hi Ana! I'd like to apply for the matchmaking process. Here are my details:\n\n";
+                if (selectedPlan) {
+                    message += `*Plan of interest:* ${selectedPlan}\n`;
+                }
+                fields.forEach(([label, fieldName]) => {
+                    const value = (data.get(fieldName) || '').toString().trim();
+                    if (value) {
+                        message += `*${label}:* ${value}\n`;
+                    }
+                });
+
+                const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+
+                setTimeout(() => {
+                    window.open(whatsappUrl, '_blank');
+                    closeModal();
+                    form.reset();
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    btn.classList.replace('bg-green-500', 'bg-white');
+                    btn.classList.replace('text-white', 'text-slate-900');
+                }, 900);
+            }, 700);
+        }
+
+        // Initialize Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
